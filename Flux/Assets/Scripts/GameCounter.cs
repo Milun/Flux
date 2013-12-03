@@ -1,11 +1,34 @@
-﻿using UnityEngine;
+﻿/**
+ * GameCounter.cs
+ * 
+ * Author: 	Milton Plotkin
+ * Date:	3/12/2013
+ * 
+ * A counter that is used by the player.
+ * 
+ * Overloads its derived classes SetTile() method to include the "taking" of other GameCounters.
+ * This GameCounter can also create a new GameCounter (and parent it to its own Player and a new Tile)
+ * when moved to an empty Tile and told to "split" (setting the number on the overlay lower than its health
+ * by pressing right-click).
+ * 
+ * Has a reference to the Tile it is on,
+ * as well as the Player that uses it.
+ * 
+ * Also includes visual implementation of highlighting all valid tiles when selected.
+ * When this GameCounters health drops to or below 0, it will automatically remove itself from the
+ * game and remove all references to it from its Player and Tile (if applicable).
+ * 
+ * Has a Flux() method. This should be called once, at the end of the last players turn.
+ */
+
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
 public class GameCounter : Counter {
 
 	#region vars
-	private const int MaxHealth = 5;	// If health exceeds this, it rolls over to 1
+	private const int maxHealth = 5;	// If health exceeds this, it rolls over to 1
 	#endregion
 
 	// ====================================================================================================================
@@ -24,7 +47,7 @@ public class GameCounter : Counter {
 		if (!tile) return;
 		
 		// Reset if the counter reaches "critical Flux"
-		if (GetHealth() == MaxHealth)
+		if (GetHealth() == maxHealth)
 			SetHealth(1);
 		else
 			SetHealth(GetHealth()+1);

@@ -1,4 +1,20 @@
-﻿using UnityEngine;
+﻿/**
+ * TextMessage.cs
+ * 
+ * Author: 	Milton Plotkin
+ * Date:	3/12/2013
+ * 
+ * Plays a single animation of zooming/fading text when SetText() is called.
+ * 
+ * Animation time and zoom multiplication are stored to prevent calculation each Update().
+ * 
+ * previosText is used to store the last string that was sent to the TextMessage,
+ * and prevent the same message being played twice. This is used by Game as a means to determine
+ * if the TextMessage has finished playing its animation, and then skip requesting the same animation
+ * being played as it returns to the position that its loop was halted in.
+ */
+
+using UnityEngine;
 using System.Collections;
 
 public class TextMessage : MonoBehaviour {
@@ -17,12 +33,18 @@ public class TextMessage : MonoBehaviour {
 
 	// ====================================================================================================================
 
-	// Use this for initialization
+	/// <summary>
+	/// Store the initial scale of the text (defined in Unity editor).
+	/// </summary>
 	void Start () {
 		originalScale = this.transform.localScale;
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Animates the text once.
+	/// If no animation is requested/animation has finished playing,
+	/// do not render the text.
+	/// </summary>
 	void Update () {
 
 		// If currently animating

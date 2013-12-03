@@ -1,4 +1,24 @@
-﻿using UnityEngine;
+﻿/**
+ * Player.cs
+ * 
+ * Author: 	Milton Plotkin
+ * Date:	3/12/2013
+ * 
+ * Defines a game Player. The Player's color and name are defined in the Unity editor.
+ * This is also what passes the Player information about the camera and Counters.
+ * Makes use of Ray tracing to determine what the mouse hits.
+ * 
+ * When the Player is initialized, it instantiates its own GameCounters (and passes them all
+ * relevant information such as color and their Player; this).
+ * 
+ * The Player has a definition for its Turn(), which returns true if they make a valid move.
+ * This should be used by the Game to prevent a the game loop from executing unless
+ * a valid move is made.
+ * 
+ * Also contains methods to determine if the player has lost/stalemated.
+ */
+
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -55,15 +75,15 @@ public class Player : MonoBehaviour {
 	/// <summary>
 	/// Removes the player and counters from the game.
 	/// </summary>
-	public void Die() {
+	public void Destruct() {
 		while (counters.Count > 0)
-			counters[0].Die();
+			counters[0].Destruct();
 	}
 
 	/// <summary>
 	/// Returns true if none of the counters the player has can make a valid move.
 	/// </summary>
-	public bool checkStalemate() {
+	public bool CheckStalemate() {
 		
 		// Easiest stalemate: If there are no counters left to use.
 		if (counters.Count <= 0) return true;
@@ -122,7 +142,7 @@ public class Player : MonoBehaviour {
 
 	/// <summary>
 	/// Initiates the player.
-	/// Populates their starting counters.
+	/// Creates their starting GameCounters and adds them to the game.
 	/// </summary>
 	/// <param name="zPos">Z-position of the players counters (when off the board).</param>
 	/// <param name="startCounters">The ammount of counters the player starts with.</param>
@@ -149,7 +169,16 @@ public class Player : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Returns true when the player makes a valid move.
+	/// Will only return true when the player makes a valid move.
+	/// 
+	/// 
+	/// Valid moves:
+	/// 
+	/// Moving a counter (owned by this player) that is on/off the board onto an empty tile.
+	/// Moving a counter (owned by this player) that is on the board onto an opponents counter
+	/// with less health than it.
+	/// Seperating a counter (owned by this player) into two (using right click), with the copy being 
+	/// placed on an empty tile.
 	/// </summary>
 	public bool Turn() {
 		
@@ -187,6 +216,8 @@ public class Player : MonoBehaviour {
 		}
 		
 		// Left-Click:
+		// The following code should only execute on left-click, so do not continue
+		// otherwise.
 		if (!Input.GetMouseButtonUp(0)) return false;
 		
 		// Only select if owned by this player.

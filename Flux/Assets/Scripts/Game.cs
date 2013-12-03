@@ -1,4 +1,21 @@
-﻿using UnityEngine;
+﻿/**
+ * Game.cs
+ * 
+ * Author: 	Milton Plotkin
+ * Date:	3/12/2013
+ * 
+ * Executes the main game loop and checks Player states for victory/loss and removes them accordingly.
+ * 
+ * This class initialised the game board using Tiles, and is passed information on Players and Camera
+ * through the Unity GUI. Specifications on board size and player amount are provided through PlayerPrefs,
+ * which are defined in the previous scene: "menu".
+ * 
+ * The game loop waits for a player to make input before executing. When a player does make input,
+ * the loop will execute, but will halt to play a text animation if required. After the animation
+ * finishes playing, the loop resumes execution. This is accomplished using the "dontBlock" variable. 
+ */
+
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -19,7 +36,7 @@ public class Game : MonoBehaviour {
 	private List<Tile> board;		// Reference to all tiles in the board.
 	private int currentPlayer = 0;	// The iterator for the current player in "Players".
 
-	private bool skip = false;		// Used with "Message" to check player states while skipping waiting for input.
+	private bool dontBlock = false;	// Used with "Message" to check player states while skipping waiting for input.
 	#endregion
 
 	// ====================================================================================================================
@@ -55,44 +72,55 @@ public class Game : MonoBehaviour {
 	// ====================================================================================================================
 
 	#region game loop
-	// Update is called once per frame
+
+	/// <summary>
+	/// The main game loop.
+	/// </summary>
 	void Update () {
-		
+
+		///////////////////////////
+		/// PERFORMED EACH STEP ///
+		///////////////////////////
+
 		// Make inactive players have counters appear faded.
 		foreach (Player e in Players)
-			if (currentPlayer < Players.Count && e != Players[currentPlayer])
+		{
+			if (currentPlayer < Players.Count)
+			{
+				if (e != Players[currentPlayer])
+					e.Deactivate(); // Executing this makes player counters appear faded.
+			}
+			else
 				e.Deactivate();
+		}
 		
-		
+
+		// Text animation //
 		// Don't allow any input/processing during the text animation.
 		if (Message.IsAnimating()) return;
-		
-		
+
+
+		/////////////////////////////////////////////////////////////////////
+		/// GAME LOOP (Waits for player input unless "dontBlock" is true) ///
+		/////////////////////////////////////////////////////////////////////
+
 		// The following executes when the current player makes a valid move.
 		// It will skip waiting for input if a message has just finished playing.
 		// This makes the game loop both blocking and non-blocking.
-		if (skip || Players[currentPlayer].Turn())
-		{
+		if (dontBlock || Players[currentPlayer].Turn())
+		{	
 			///////////////////////////
 			// Check for a stalemate //
 			///////////////////////////
-			
-			// If the player after this one cannot make a move, make them lose!
-			if (Players[_GetNextPlayer()].checkStalemate())
-			{
-				// Make a text animation play stating that this player has lost. Continue
-				// functioning only AFTER the animation has finished playing.
-				if (_SetMessage(Players[_GetNextPlayer()].GetName() + " CAN'T MAKE A MOVE!"))
-					return;
-				
-				// After the animation has finished playing, the code will return to this point.
-				_DeletePlayer(_GetNextPlayer());
-			}
-			
-			//////////////////////////////
-			// End of last players turn //
-			//////////////////////////////
-			
+			// Returns true if the player directly after this one was removed.
+			// By returning, it will loop again to check if the new next player is also in stalemate.
+			// _CheckStalemate sets "dontBlock" to true.
+			if (_CheckStalemate())
+				return;
+
+			//////////////////////////////////////////
+			// If it's the end of last players turn //
+			//////////////////////////////////////////
 			if (_GetNextPlayer() == 0)
 			{
 				// Check for any dead players.
@@ -120,21 +148,21 @@ public class Game : MonoBehaviour {
 				}
 				else
 				{
-					// If there is no winner, go back to the first player and Flux.
-					Message.ClearText();// The Message will not play the same animation twice unless
-					// this tells it to do so.
-					Message.SetText("FLUX!");
+					// Play a text animation before executing the Flux.
+					if (_SetMessage("FLUX!"))
+						return;
 					
 					foreach (Player e in Players)
 						e.Flux();
 					
 					// Wait for the next players input before proceeding.
-					skip = false;
+					dontBlock = false;
 				}
 			}
-			
+
 			// Set the current player to the next player in line.
 			currentPlayer = _GetNextPlayer();
+			Message.ClearText();
 		}
 	}
 	#endregion
@@ -149,6 +177,33 @@ public class Game : MonoBehaviour {
 	/// <param name="boardSize">Board size</param>
 	private void _InitMessage(int boardSize) {
 		Message.transform.position = new Vector3((float)boardSize/2f, 1f, (float)boardSize/2f);
+	}
+
+	/// <summary>
+	/// Checks if the player directly after the currentPlayer can make any valid moves.
+	/// If a player has stalemated, this will remove that player and tell the game to play a 
+	/// text animation stating this.
+	/// 
+	/// Returns true if a player was removed.
+	/// </summary>
+	private bool _CheckStalemate() {
+		///////////////////////////
+		// Check for a stalemate //
+		///////////////////////////
+		
+		// If the player after this one cannot make a move, make them lose!
+		if (Players[_GetNextPlayer()].CheckStalemate())
+		{
+			// Make a text animation play stating that this player has lost. Continue
+			// functioning only AFTER the animation has finished playing.
+			if (_SetMessage(Players[_GetNextPlayer()].GetName() + " CAN'T MAKE A MOVE!"))
+				return true;
+			
+			// After the animation has finished playing, the code will return to this point.
+			_DeletePlayer(_GetNextPlayer());
+		}
+
+		return false;
 	}
 
 	/// <summary>
@@ -236,7 +291,7 @@ public class Game : MonoBehaviour {
 			throw new System.Exception("Attempted to delete non-existant player!");
 		
 		// Have the player call its destructor functions
-		Players[i].Die ();
+		Players[i].Destruct ();
 		
 		// Remove the player instance from the game, and remove all references to it.
 		Destroy(Players[i].gameObject);
@@ -337,7 +392,7 @@ public class Game : MonoBehaviour {
 
 		if (Message.SetText(s))
 		{
-			skip = true;
+			dontBlock = true;
 			return true;
 		}
 

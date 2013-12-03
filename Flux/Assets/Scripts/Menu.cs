@@ -1,4 +1,15 @@
-﻿using UnityEngine;
+﻿/**
+ * Menu.cs
+ * 
+ * Author: 	Milton Plotkin
+ * Date:	3/12/2013
+ * 
+ * Defines the first screen (GUI) of the game. Allows custom definition for board size,
+ * player ammount and player starting counter amount for the game. These values are
+ * passed to the Game object through Unities inbuild global "PlayerPrefs".
+ */
+
+using UnityEngine;
 using System.Collections;
 
 public class Menu : MonoBehaviour {

@@ -1,4 +1,19 @@
-﻿using UnityEngine;
+﻿/**
+ * GhostCounter.cs
+ * 
+ * Author: 	Milton Plotkin
+ * Date:	3/12/2013
+ * 
+ * A transparent Counter used to help the user visualise moving a GameCounter to an empty Tile.
+ * Has no effect on the games state outside of visuals.
+ * 
+ * Will display a number representing the health of the GameCounter that will be placed on the Tile.
+ * If the number is lower than the currently selected GameCounter, a new GameCounter will be placed
+ * on the GhostCounters Tile, with health equal to the number it displayed (likewise, the selected GameCounter
+ * will lose that much health). The GhostCounter does not implement this, it only visualises it.
+ */
+
+using UnityEngine;
 using System.Collections;
 
 public class GhostCounter : Counter {
@@ -9,7 +24,10 @@ public class GhostCounter : Counter {
 
 	// ====================================================================================================================
 
-	// Update is called once per frame
+	/// <summary>
+	/// Checks each frame if this overlay is active. 
+	/// If not, the GhostCounter will not be rendered until it is needed again.
+	/// </summary>
 	new void Update () {
 
 		if (visibleTimer > 0f)
@@ -32,7 +50,7 @@ public class GhostCounter : Counter {
 	/// Moves the GhostCounter to a tile.
 	/// Will not move if the tile already has a counter (prevents overlap).
 	/// </summary>
-	/// <param name="tile">The tile to move to.</param>
+	/// <param name="tile">The Tile to move to.</param>
 	new public void SetTile(Tile tile) {
 		
 		_SetVisible(false);
@@ -71,10 +89,10 @@ public class GhostCounter : Counter {
 	/// <summary>
 	/// Used by GhostCounter to automate setting its visibility.
 	/// </summary>
-	/// <param name="b">True: visible, false: invisible.</param>
-	private void _SetVisible(bool b) {
-		renderer.enabled = b;
-		text.renderer.enabled = b;
+	/// <param name="visibility">True: visible, false: invisible.</param>
+	private void _SetVisible(bool visibility) {
+		renderer.enabled = visibility;
+		text.renderer.enabled = visibility;
 	}
 
 	#endregion

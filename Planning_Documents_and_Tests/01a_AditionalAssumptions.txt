@@ -1,0 +1,2 @@
+-	If, when it reaches a players turn they cannot make a valid move, that player loses the game
+	and the next players turn begins.
